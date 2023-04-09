@@ -1,4 +1,3 @@
-//Importamos bibliotecas necesarias para el proyecto
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -11,15 +10,17 @@ extern "C" {
 #include <HTTPClient.h>
 
 //Declaramos variables y constantes
-#define WIFI_SSID "Wi-Fi Unimagdalena"
-#define MQTT_HOST IPAddress( 54, 160, 115, 85)
+#define WIFI_SSID "DEME 2.4G"
+#define WIFI_PASSWORD "DEME05160513"
+#define MQTT_HOST IPAddress( 3, 86, 13, 130)
 #define MQTT_PORT 1883
 #define MQTT_PUB_TEMP "Temperatura"
 #define MQTT_PUB_HUM "Humedad"
 #define MQTT_PUB_ST "Sensacion Termica"
 
 Adafruit_BME280 bme;
-
+int ventilador = 4;
+int foco = 5;
 float temp;
 float hum;
 float temp_F;
@@ -37,7 +38,7 @@ const long interval = 5000;
 //Funcion conectar Wi-Fi
 void connectToWifi() {
   Serial.println("Connecting to Wi-Fi...");
-  WiFi.begin(WIFI_SSID);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 }
 
 //Funcion conectar MQTT
@@ -88,6 +89,9 @@ void onMqttPublish(uint16_t packetId) {
 
 // Funcion que se encarga de inicializar las conexiones Wi-Fi y MQTT. Configuracion de los temporizadores para la reconexion Wi-Fi y MQTT.
 void setup() {
+
+  pinMode(ventilador, OUTPUT);
+  pinMode(foco, OUTPUT); 
   Serial.begin(115200);
   Serial.println();
    
@@ -118,37 +122,66 @@ void loop() {
   temp_F = 1.8 * bme.readTemperature() + 32;
   hum = bme.readHumidity();
   st = ((-42.379 + 2.04901523 * temp_F + 10.14333127 * hum + -0.22475541 * temp_F * hum + -0.00683783 * pow(temp_F, 2) + -0.05481717 * pow(hum, 2) + 0.00122874 * pow(temp_F, 2) * hum + 0.00085282 * temp_F * pow(hum, 2) + -0.00000199 * pow(temp_F, 2) * pow(hum, 2)) - 32) / 1.8;
+  
+  
+  
   message_to_whatsapp();
+  simulacion();
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
+    Serial.printf("Temperatura: %.2f \n", temp);
     uint16_t packetIdPub1 = mqttClient.publish(MQTT_PUB_TEMP, 1, true, String(temp).c_str());                            
     uint16_t packetIdPub2 = mqttClient.publish(MQTT_PUB_HUM, 1, true, String(hum).c_str());                         
     uint16_t packetIdPub3 = mqttClient.publish(MQTT_PUB_ST, 1, true, String(st).c_str());                            
   }  
 }
 
+
+
+
+
+
+void simulacion () {
+  if(temp<=33.52){
+    digitalWrite(ventilador, HIGH);    
+    digitalWrite(foco, LOW);
+  }
+
+ if(temp>=34.52){
+    digitalWrite(ventilador, LOW);    
+    digitalWrite(foco, HIGH);
+  }
+    
+}
+
+
+
+
 // Funcion para enviar mensajes via Whatsapp
 void  message_to_whatsapp()    {   
-  if((temp>=25)&&(temp<=26)) {
-    delay(30000);
-    mensaje="Cuidado, la temperatura esta fuera de los limites establecidos.";
+  if((temp>34.52)||(temp<33.52)) {
+    delay(10000);
+    mensaje="Cuidado, la Temperatura esta fuera de los limites establecidos.";
     url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(mensaje);
 
     int httpCode;     
     HTTPClient http;
     http.begin(url);  
     httpCode = http.POST(url); 
-    if (httpCode == 200)      
-    {
-    Serial.println("Sent ok."); 
-    }
-    else                      
-    {
-    Serial.println("Error."); 
-    }
     http.end(); 
   }  
   
+  if((hum<=40)||(hum>=60)) {
+    delay(10000);
+    mensaje="Cuidado, la Humedad esta fuera de los limites establecidos.";
+    url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(mensaje);
+
+    int httpCode;     
+    HTTPClient http;
+    http.begin(url);  
+    httpCode = http.POST(url); 
+    http.end(); 
+  } 
 }
 
 // Funcion para codificar la cadena de caracteres en formato URL antes de enviarla en la solicitud HTTP

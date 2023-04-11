@@ -157,31 +157,33 @@ void simulacion () {
 
 
 // Funcion para enviar mensajes via Whatsapp
-void  message_to_whatsapp()    {   
-  if((temp<29.5)||(temp>30.7)) {
-    
-    mensaje="Cuidado, la Temperatura esta fuera de los limites establecidos.";
-    url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(mensaje);
-
-    int httpCode;     
-    HTTPClient http;
-    http.begin(url);  
-    httpCode = http.POST(url); 
-    http.end();
-    delay(10000);
-  }  
-  
-  if((hum<=40)||(hum>=60)) {
-    mensaje="Cuidado, la Humedad esta fuera de los limites establecidos.";
-    url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(mensaje);
-
-    int httpCode;     
-    HTTPClient http;
-    http.begin(url);  
-    httpCode = http.POST(url); 
-    http.end(); 
-    delay(10000);
-  } 
+void message_to_whatsapp() {
+  switch (true) {
+    case (1):
+      if (temp < 29.5 || temp > 30.7) {
+        mensaje = "Cuidado, la Temperatura esta fuera de los limites establecidos.";
+        url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(mensaje);
+        HTTPClient http;
+        http.begin(url);
+        httpCode = http.POST(url);
+        http.end();
+        mensaje_enviado_temp = true;
+      }
+      break;
+    case (2):
+      if (hum <= 40 || hum >= 60) {
+        mensaje = "Cuidado, la Humedad esta fuera de los limites establecidos.";
+        url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(mensaje);
+        HTTPClient http;
+        http.begin(url);
+        httpCode = http.POST(url);
+        http.end();
+        mensaje_enviado_hum = true;
+      }
+      break;
+    default:
+      break;
+  }
 }
 
 // Funcion para codificar la cadena de caracteres en formato URL antes de enviarla en la solicitud HTTP

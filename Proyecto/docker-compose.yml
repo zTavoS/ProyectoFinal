@@ -61,7 +61,7 @@ services:
     restart: always
     build:
       context: .
-      dockerfile: services/analitica/Dockerfile
+      dockerfile: analitica/Dockerfile
     depends_on:
       - database
       - broker

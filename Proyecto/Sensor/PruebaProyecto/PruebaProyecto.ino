@@ -119,66 +119,57 @@ void loop() {
   temp = bme.readTemperature();
   temp_F = 1.8 * bme.readTemperature() + 32;
   hum = bme.readHumidity();
+  
   st = ((-42.379 + 2.04901523 * temp_F + 10.14333127 * hum + -0.22475541 * temp_F * hum + -0.00683783 * pow(temp_F, 2) + -0.05481717 * pow(hum, 2) + 0.00122874 * pow(temp_F, 2) * hum + 0.00085282 * temp_F * pow(hum, 2) + -0.00000199 * pow(temp_F, 2) * pow(hum, 2)) - 32) / 1.8;
   
   uint16_t packetIdPub1 = mqttClient.publish(MQTT_PUB_TEMP, 1, true, String(temp).c_str());                            
   uint16_t packetIdPub2 = mqttClient.publish(MQTT_PUB_HUM, 1, true, String(hum).c_str());                         
   uint16_t packetIdPub3 = mqttClient.publish(MQTT_PUB_ST, 1, true, String(st).c_str());
   
-  
   message_to_whatsapp();
   simulacion();
-  
-  
-  
-  delay(1000);                            
+
+  delay(5000);                            
     
 }
 
-
-
-
-
-
 void simulacion () {
-  if(temp<=29.6){
+  if(temp<=29.5){
     digitalWrite(ventilador, HIGH);    
     digitalWrite(foco, LOW);
   }
 
- if(temp>=30.6){
+ if(temp>=30.5){
     digitalWrite(ventilador, LOW);    
     digitalWrite(foco, HIGH);
   }
     
 }
 
-
-
-
 // Funcion para enviar mensajes via Whatsapp
 void message_to_whatsapp() {
+  int httpCode;
   switch (true) {
     case (1):
-      if (temp < 29.5 || temp > 30.7) {
+      if (temp < 29.6 || temp > 30.4) {
         mensaje = "Cuidado, la Temperatura esta fuera de los limites establecidos.";
         url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(mensaje);
         HTTPClient http;
         http.begin(url);
         httpCode = http.POST(url);
         http.end();
-        mensaje_enviado_temp = true;
+        
       }
       break;
     case (2):
-      if (hum <= 40 || hum >= 60) {
+      if (hum < 40 || hum > 60) {
         mensaje = "Cuidado, la Humedad esta fuera de los limites establecidos.";
         url = "https://api.callmebot.com/whatsapp.php?phone=" + phone_number + "&apikey=" + apiKey + "&text=" + urlencode(mensaje);
         HTTPClient http;
         http.begin(url);
         httpCode = http.POST(url);
         http.end();
-        mensaje_enviado_hum = true;
+        
       }
       break;
     default:

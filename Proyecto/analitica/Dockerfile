@@ -13,6 +13,6 @@ RUN pip install sklearn
 RUN pip install paho-mqtt
 
 
-COPY Proyecto/analitica/analitica.py /app
+COPY Proyecto/analitica/analitica.py /app/analitica.py
 
 CMD ["python", "/app/analitica.py"]

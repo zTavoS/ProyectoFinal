@@ -9,7 +9,7 @@ RUN apt -y install python3-aiohttp
 RUN pip install influxdb-client
 RUN pip install pandas
 RUN pip install numpy
-RUN pip install sklearn
+RUN pip install sckit-learn
 RUN pip install paho-mqtt
 
 
